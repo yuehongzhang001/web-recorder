@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "Web Recorder",
+  "version": "1.0",
+  "description": "Record current tab content as a video file.",
+  "permissions": [
+    "tabCapture",
+    "offscreen",
+    "storage",
+    "tabs",
+    "scripting",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "popup/popup.html"
+  },
+  "background": {
+    "service_worker": "service_worker.js"
+  }
+}

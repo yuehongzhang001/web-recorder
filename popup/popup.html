@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Recorder</title>
+    <link rel="stylesheet" href="popup.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <div class="record-dot"></div>
+                <h1>Web Recorder</h1>
+            </div>
+        </header>
+
+        <main>
+            <div id="setup-view" class="view active">
+                <div class="mode-selector">
+                    <button id="btn-mode-always" class="mode-btn active" data-mode="always">
+                        <span>Always</span>
+                    </button>
+                    <button id="btn-mode-timed" class="mode-btn" data-mode="timed">
+                        <span>Timed</span>
+                    </button>
+                </div>
+
+                <div id="always-settings" class="settings-group">
+                    <label for="input-max-duration">Max Limit (minutes)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-max-duration" min="1" max="1440" value="60">
+                    </div>
+                </div>
+
+                <div id="timed-settings" class="settings-group hidden">
+                    <label for="input-duration">Duration (minutes)</label>
+                    <div class="input-wrapper">
+                        <input type="number" id="input-duration" min="1" max="1440" value="5">
+                    </div>
+                </div>
+
+                <button id="btn-start" class="primary-btn">Start Recording</button>
+            </div>
+
+            <div id="recording-view" class="view">
+                <div class="timer-display">
+                    <div id="elapsed-time">00:00:00</div>
+                    <div id="status-badge" class="badge recording">Recording</div>
+                </div>
+
+                <div class="controls">
+                    <button id="btn-pause" class="control-btn">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                        </svg>
+                    </button>
+                    <button id="btn-resume" class="control-btn hidden">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M8 5v14l11-7z" />
+                        </svg>
+                    </button>
+                    <button id="btn-stop" class="control-btn stop">
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                            <path fill="currentColor" d="M6 6h12v12H6z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="popup.js"></script>
+</body>
+
+</html>
