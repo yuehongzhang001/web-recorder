@@ -55,9 +55,9 @@
                 btnResume.classList.add('web-recorder-hidden');
             }
         } else {
-            if (document.body.contains(container)) {
-                container.remove();
-            }
+            // Remove the container and reset initialization flag
+            const controls = document.querySelectorAll('.web-recorder-controls');
+            controls.forEach(el => el.remove());
             window.webRecorderControlsInitialized = false;
         }
     }

@@ -156,13 +156,18 @@ function resumeRecording() {
     });
 }
 
-function handleOffscreenStopped() {
-    updateState({
+async function handleOffscreenStopped() {
+    // First update the recording state to false - this will broadcast to the tab
+    await updateState({
         isRecording: false,
         isPaused: false,
         startTime: null,
         pauseTime: null,
-        totalPausedTime: 0,
+        totalPausedTime: 0
+    });
+
+    // Then clear the target tab ID
+    await updateState({
         targetTabId: null
     });
 }
