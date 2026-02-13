@@ -5,3 +5,4 @@ dist/
 build/
 .env
 .gemini/
+GIT_GUIDELINES.md
