@@ -41,12 +41,8 @@ header {
     gap: 10px;
 }
 
-.record-dot {
-    width: 12px;
-    height: 12px;
-    background-color: var(--danger);
-    border-radius: 50%;
-    box-shadow: 0 0 8px var(--danger);
+.logo img {
+    filter: drop-shadow(0 0 4px var(--primary));
 }
 
 h1 {
@@ -141,8 +137,15 @@ input:focus {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(5px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .timer-display {
@@ -180,9 +183,17 @@ input:focus {
 }
 
 @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.6; }
-    100% { opacity: 1; }
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+
+    100% {
+        opacity: 1;
+    }
 }
 
 .controls {
