@@ -2,6 +2,17 @@
     if (window.webRecorderControlsInitialized) return;
     window.webRecorderControlsInitialized = true;
 
+    let currentSessionId = null;
+
+    DebugLogger.init({
+        context: 'content_script',
+        getSessionId: () => currentSessionId,
+        getStateSnapshot: () => ({
+            controlsInitialized: window.webRecorderControlsInitialized
+        })
+    });
+    DebugLogger.info('controls.initialized', {});
+
     const container = document.createElement('div');
     container.className = 'web-recorder-controls';
     container.innerHTML = `
@@ -35,11 +46,21 @@
         timer.textContent = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     }
 
-    btnPause.onclick = () => chrome.runtime.sendMessage({ type: 'PAUSE_RECORDING' });
-    btnResume.onclick = () => chrome.runtime.sendMessage({ type: 'RESUME_RECORDING' });
-    btnStop.onclick = () => chrome.runtime.sendMessage({ type: 'STOP_RECORDING' });
+    btnPause.onclick = () => {
+        DebugLogger.info('recording.pause.clicked', {});
+        chrome.runtime.sendMessage({ type: 'PAUSE_RECORDING' });
+    };
+    btnResume.onclick = () => {
+        DebugLogger.info('recording.resume.clicked', {});
+        chrome.runtime.sendMessage({ type: 'RESUME_RECORDING' });
+    };
+    btnStop.onclick = () => {
+        DebugLogger.info('recording.stop.clicked', {});
+        chrome.runtime.sendMessage({ type: 'STOP_RECORDING', reason: 'manual' });
+    };
 
     function handleState(state) {
+        currentSessionId = state?.sessionId || null;
         if (state.isRecording) {
             if (!document.body.contains(container)) {
                 document.body.appendChild(container);
@@ -59,6 +80,7 @@
             const controls = document.querySelectorAll('.web-recorder-controls');
             controls.forEach(el => el.remove());
             window.webRecorderControlsInitialized = false;
+            DebugLogger.info('controls.removed', {});
         }
     }
 
