@@ -1,6 +1,7 @@
 let mediaRecorder;
 let recordedChunks = [];
 let recordingTimeoutId = null;
+let recordingTimeoutSessionId = null;
 let currentSessionId = null;
 let stopReason = null;
 
@@ -17,7 +18,7 @@ DebugLogger.init({
 chrome.runtime.onMessage.addListener(async (message) => {
     switch (message.type) {
         case 'START_RECORDING_IN_OFFSCREEN':
-            startRecording(message.streamId, message.duration, message.mode, message.sessionId);
+            startRecording(message.streamId, message.duration, message.maxDuration, message.mode, message.sessionId);
             break;
         case 'STOP_RECORDING_IN_OFFSCREEN':
             stopRecording(message.reason || 'manual');
@@ -36,8 +37,11 @@ chrome.runtime.onMessage.addListener(async (message) => {
 function clearRecordingTimeout() {
     if (recordingTimeoutId) {
         clearTimeout(recordingTimeoutId);
-        DebugLogger.debug('timer.cleared', {});
+        DebugLogger.debug('timer.cleared', {
+            timerSessionId: recordingTimeoutSessionId
+        });
         recordingTimeoutId = null;
+        recordingTimeoutSessionId = null;
     }
 }
 
@@ -55,13 +59,15 @@ function attachTrackDebugListeners(stream) {
     });
 }
 
-async function startRecording(streamId, duration, mode, sessionId) {
+async function startRecording(streamId, duration, maxDuration, mode, sessionId) {
     recordedChunks = [];
+    clearRecordingTimeout();
     currentSessionId = sessionId || null;
     stopReason = null;
 
     DebugLogger.info('recording.start.requested', {
         duration,
+        maxDuration,
         mode,
         hasStreamId: Boolean(streamId)
     });
@@ -129,23 +135,34 @@ async function startRecording(streamId, duration, mode, sessionId) {
             chrome.runtime.sendMessage({ type: 'OFFSCREEN_STOPPED', reason: stopReason || 'offscreen_stop' }).catch(() => { });
             mediaRecorder = null;
             currentSessionId = null;
+            stopReason = null;
         };
 
         mediaRecorder.start();
         DebugLogger.info('mediaRecorder.started', {});
 
-        clearRecordingTimeout();
-        if (duration) {
+        const autoStopAfter = mode === 'timed' ? duration : maxDuration;
+        if (autoStopAfter) {
+            recordingTimeoutSessionId = currentSessionId;
             recordingTimeoutId = setTimeout(() => {
                 DebugLogger.warn('timer.fired', {
-                    duration
+                    autoStopAfter,
+                    mode,
+                    timerSessionId: recordingTimeoutSessionId,
+                    currentSessionId
                 });
-                if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                if (
+                    recordingTimeoutSessionId === currentSessionId &&
+                    mediaRecorder &&
+                    mediaRecorder.state !== 'inactive'
+                ) {
                     stopRecording(mode === 'timed' ? 'timed_completed' : 'max_duration_reached');
                 }
-            }, duration * 1000);
+            }, autoStopAfter * 1000);
             DebugLogger.info('timer.created', {
-                duration
+                autoStopAfter,
+                mode,
+                timerSessionId: recordingTimeoutSessionId
             });
         }
     } catch (error) {

@@ -9,6 +9,7 @@ let recordingState = {
     targetTabId: null,
     mode: 'always',
     duration: null,
+    maxDuration: null,
     sessionId: null,
     stopReason: null
 };
@@ -27,6 +28,7 @@ DebugLogger.init({
         targetTabId: recordingState.targetTabId,
         mode: recordingState.mode,
         duration: recordingState.duration,
+        maxDuration: recordingState.maxDuration,
         stopReason: recordingState.stopReason
     }),
     transport: addDebugLog
@@ -107,7 +109,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             addDebugLog(message.entry);
             return false;
         case 'START_RECORDING':
-            startRecording(message.mode, message.duration)
+            startRecording(message.mode, message.duration, message.maxDuration)
                 .then(() => sendResponse({ success: true }))
                 .catch((err) => sendResponse({ success: false, error: err.message }));
             return true; // Async response
@@ -131,7 +133,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return false;
 });
 
-async function startRecording(mode, duration) {
+async function startRecording(mode, duration, maxDuration) {
     if (recordingState.isRecording) {
         DebugLogger.warn('recording.start.rejected', {
             reason: 'already_recording'
@@ -152,12 +154,14 @@ async function startRecording(mode, duration) {
     recordingState.targetTabId = tab.id;
     recordingState.mode = mode;
     recordingState.duration = duration;
+    recordingState.maxDuration = maxDuration;
     recordingState.sessionId = sessionId;
     recordingState.stopReason = null;
 
     DebugLogger.info('recording.start.requested', {
         mode,
         duration,
+        maxDuration,
         tabId: tab.id,
         sessionId
     });
@@ -189,6 +193,7 @@ async function startRecording(mode, duration) {
             totalPausedTime: 0,
             pauseTime: null,
             stopReason: null,
+            maxDuration,
             sessionId
         });
 
@@ -212,11 +217,13 @@ async function startRecording(mode, duration) {
             type: 'START_RECORDING_IN_OFFSCREEN',
             streamId: streamId,
             duration: duration,
+            maxDuration: maxDuration,
             mode,
             sessionId
         });
         DebugLogger.info('offscreen.start.sent', {
             duration,
+            maxDuration,
             mode
         });
     } catch (err) {
@@ -230,6 +237,7 @@ async function startRecording(mode, duration) {
             pauseTime: null,
             totalPausedTime: 0,
             targetTabId: null,
+            maxDuration: null,
             sessionId: null,
             stopReason: 'start_failed'
         });
@@ -277,6 +285,8 @@ async function handleOffscreenStopped(reason = 'offscreen_stopped') {
         startTime: null,
         pauseTime: null,
         totalPausedTime: 0,
+        duration: null,
+        maxDuration: null,
         stopReason: reason
     });
 

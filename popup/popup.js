@@ -97,22 +97,25 @@ modeBtns.forEach(btn => {
 });
 
 btnStart.addEventListener('click', async () => {
-    let duration;
+    let duration = null;
+    let maxDuration = null;
     if (currentMode === 'timed') {
         duration = parseInt(inputDuration.value) * 60;
     } else {
-        duration = parseInt(inputMaxDuration.value) * 60;
+        maxDuration = parseInt(inputMaxDuration.value) * 60;
     }
 
     DebugLogger.info('recording.start.clicked', {
         currentMode,
-        duration
+        duration,
+        maxDuration
     });
 
     const response = await chrome.runtime.sendMessage({
         type: 'START_RECORDING',
         mode: currentMode,
-        duration: duration
+        duration: duration,
+        maxDuration: maxDuration
     });
 
     if (response && !response.success) {
